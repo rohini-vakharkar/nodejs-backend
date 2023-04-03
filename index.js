@@ -1,11 +1,15 @@
 const express = require("express");
 const app = express();
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" }).single("demo_image");
 const cors = require("cors");
 const bodyparser = require("body-parser");
 // const userRoutes = require("./controller/customer.controller");
 const router = require("./controller/customer.controller");
 const userRouter = require("./controller/user.controller");
 const route = require("./controller/user.products");
+const fileupload = require("./controller/fileupload");
+
 const PORT = process.env.PORT || 9000;
 const abc = [
   {
@@ -23,7 +27,7 @@ const abc = [
   },
 ];
 app.use(cors());
-app.use(bodyparser.json({limit:'50mb'}));
+app.use(bodyparser.json({ limit: "50mb" }));
 app.use(
   bodyparser.urlencoded({
     extended: true,
@@ -40,6 +44,7 @@ app.get("/", async (req, res) => {
 app.use("/api", router);
 app.use("/api", route);
 app.use("/api", userRouter);
+app.use("/api",fileupload)
 app.listen(PORT, () =>
   console.log(`your application is running on http://localhost:${PORT}`)
 );

@@ -77,7 +77,7 @@ route.post("/productList", function (req, res) {
         console.log("error----", error);
         if (error) {
           return res.status(200).json({
-            message: "Error Post",
+            message: "Not insert data ",
           });
         } else {
           if (Object.keys(response).length > 0) {

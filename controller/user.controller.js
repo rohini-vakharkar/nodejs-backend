@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 log.post("/user", function (req, res) {
-  const { email, password } = req.body;
+  const { name, phone, email, password, city, country, dob, image } = req.body;
   mySql.getConnection((err, conn) => {
     if (err) {
       return res.status(500).json({
@@ -14,7 +14,7 @@ log.post("/user", function (req, res) {
       });
     }
     conn.query(
-      "SELECT * FROM login where email=?",
+      "SELECT * FROM user where email=?",
       [email],
       (error, response) => {
         console.log("error,response", error, response);
@@ -33,19 +33,19 @@ log.post("/user", function (req, res) {
           } else {
             bcrypt.hash(password, 10).then((hash) => {
               conn.query(
-                "INSERT INTO login(email,password) VALUES(?,?)",
-                [email, hash],
+                "INSERT INTO user(name,phone,email,password,city,country,dob,image) VALUES(?,?,?,?,?,?,?,?)",
+                [name, phone, email, hash, city, country, dob, image],
                 (error1, response1) => {
                   console.log("error1", error1, response1);
                   if (error1) {
                     // conn.release();
                     return res.status(500).json({
-                      message: "Error due to Not fetching",
+                      message: "Error due to Not inserting dataaaaaaaaaa",
                     });
                   } else {
                     // conn.release();
                     return res.json({
-                      message: "user successfuly logged in",
+                      message: "user successfuly Sign  in",
                       data: response1,
                     });
                   }
@@ -69,14 +69,14 @@ log.post("/login", function (req, res) {
     }
 
     conn.query(
-      "SELECT * FROM login where email=?",
+      "SELECT * FROM user where email=?",
       [email],
       (error, response) => {
         console.log("error,response", error, response);
         if (error) {
           // conn.release();
           return res.status(500).json({
-            message: "Error due to Not fetching",
+            message: "Error due to Not fetching usersssss",
           });
         } else {
           if (response.length > 0) {
@@ -90,14 +90,14 @@ log.post("/login", function (req, res) {
                   process.env.JWT_SECRET,
                   { expiresIn: "1d" }
                 );
-                // conn.release();
-                return res.json({
+                conn.release();
+                return res.status(200).json({
                   message: "success",
                   token: token,
                 });
               } else {
                 conn.release();
-                return res.json({
+                return res.status(400).json({
                   message: "please check password",
                 });
               }
@@ -105,7 +105,7 @@ log.post("/login", function (req, res) {
           } else {
             conn.release();
             console.log("response", response);
-            return res.json({
+            return res.status(404).json({
               message: "user doesnot exist please",
             });
           }
@@ -121,31 +121,29 @@ log.post("/profile/me", async (req, res) => {
   var payload = jwt.decode(base64Payload);
   console.log("payload", payload);
   const { email } = payload;
+  console.log("email----", email);
   await mySql.getConnection((err, conn) => {
     if (err) {
       res.status(500).json({
         message: "Fail to connect",
       });
     }
-    conn.query(
-      "SELECT * FROM login WHERE email=?",
-      [email],
-      (err, response) => {
-        if (err) {
-          res.status(500).json({
-            message: "Error during fetch the record",
+    conn.query("SELECT * FROM user WHERE email=?", [email], (err, response) => {
+      console.log("err--", err);
+      if (err) {
+        res.status(500).json({
+          message: "Error during fetch the record",
+        });
+      } else {
+        if (response.length > 0) {
+          conn.release();
+          res.status(200).json({
+            message: "success",
+            data: response,
           });
-        } else {
-          if (response.length > 0) {
-            conn.release();
-            res.status(200).json({
-              message: "success",
-              data: response,
-            });
-          }
         }
       }
-    );
+    });
   });
 });
 
